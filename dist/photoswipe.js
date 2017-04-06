@@ -1,4 +1,4 @@
-/*! PhotoSwipe - v4.1.2 - 2017-04-05
+/*! PhotoSwipe - v4.1.2 - 2017-04-06
 * http://photoswipe.com
 * Copyright (c) 2017 Dmitry Semenov; */
 (function (root, factory) { 
@@ -327,6 +327,8 @@ var _options = {
 	arrowKeys: true,
 	mainScrollEndFriction: 0.35,
 	panEndFriction: 0.35,
+	// Allows for overriding the passed in width/height values with the actual image width/height once it has downloaded.
+	useNaturalDimensionsOverride: false,
 	isClickableElement: function(el) {
         return el.tagName === 'A';
     },
@@ -2845,6 +2847,26 @@ var _getItemAt,
 		var onComplete = function() {
 			item.loading = false;
 			item.loaded = true;
+			var shouldUpdateSize = false;
+
+			if (_options.useNaturalDimensionsOverride && item.naturalDimensionsSet !== true) {
+				// Attempt to use the actual width/height of the image regardless of what was initially specified.
+				item.naturalDimensionsSet = true;
+
+				if (this.naturalWidth && item.w !== this.naturalWidth) {
+					item.w = this.naturalWidth;
+					shouldUpdateSize = true;
+				}
+
+				if (this.naturalHeight && item.h !== this.naturalHeight) {
+					item.h = this.naturalHeight;
+					shouldUpdateSize = true;
+				}
+
+				if (shouldUpdateSize) {
+					self.updateSize(true);
+				}
+			}
 
 			if(item.loadComplete) {
 				item.loadComplete(item);
@@ -3182,6 +3204,7 @@ _registerModule('Controller', {
 
 	}
 });
+
 
 /*>>items-controller*/
 
